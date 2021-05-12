@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2019 Jolla Ltd.
- * Copyright (C) 2018-2019 Slava Monich <slava.monich@jolla.com>
+ * Copyright (C) 2018-2021 Jolla Ltd.
+ * Copyright (C) 2018-2021 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of the BSD license as follows:
  *
@@ -49,7 +49,18 @@ radio_req_name(
 #define RADIO_REQ_(req,resp,Name,NAME) \
     case RADIO_REQ_##NAME: return #Name;
     RADIO_CALL_1_0(RADIO_REQ_)
+    RADIO_CALL_1_1(RADIO_REQ_)
+    RADIO_CALL_1_2(RADIO_REQ_)
+    RADIO_CALL_1_3(RADIO_REQ_)
+    RADIO_CALL_1_4(RADIO_REQ_)
 #undef RADIO_REQ_
+    case RADIO_REQ_START_NETWORK_SCAN_1_2:     return "startNetworkScan_1_2";
+    case RADIO_REQ_SET_INDICATION_FILTER_1_2:  return "setIndicationFilter_1_2";
+    case RADIO_REQ_SETUP_DATA_CALL_1_2:        return "setupDataCall_1_2";
+    case RADIO_REQ_DEACTIVATE_DATA_CALL_1_2:   return "deactivateDataCall_1_2";
+    case RADIO_REQ_SETUP_DATA_CALL_1_4:        return "setupDataCall_1_4";
+    case RADIO_REQ_SET_INITIAL_ATTACH_APN_1_4: return "setInitialAttachApn_1_4";
+    case RADIO_REQ_SET_DATA_PROFILE_1_4:       return "setDataProfile_1_4";
     case RADIO_REQ_ANY:
         break;
     }
@@ -65,7 +76,33 @@ radio_resp_name(
 #define RADIO_RESP_(req,resp,Name,NAME) \
     case RADIO_RESP_##NAME: return #Name "Response";
     RADIO_CALL_1_0(RADIO_RESP_)
+    RADIO_CALL_1_1(RADIO_RESP_)
+    RADIO_CALL_1_2(RADIO_RESP_)
+    RADIO_CALL_1_3(RADIO_RESP_)
+    RADIO_CALL_1_4(RADIO_RESP_)
 #undef RADIO_RESP_
+    case RADIO_RESP_GET_CELL_INFO_LIST_1_2:
+        return "getCellInfoListResponse_1_2";
+    case RADIO_RESP_GET_ICC_CARD_STATUS_1_2:
+        return "getIccCardStatusResponse_1_2";
+    case RADIO_RESP_GET_CURRENT_CALLS_1_2:
+        return "getCurrentCallsResponse_1_2";
+    case RADIO_RESP_GET_SIGNAL_STRENGTH_1_2:
+        return "getSignalStrengthResponse_1_2";
+    case RADIO_RESP_GET_VOICE_REGISTRATION_STATE_1_2:
+        return "getVoiceRegistrationStateResponse_1_2";
+    case RADIO_RESP_GET_DATA_REGISTRATION_STATE_1_2:
+        return "getDataRegistrationStateResponse_1_2";
+    case RADIO_RESP_GET_CELL_INFO_LIST_RESPONSE_1_4:
+        return "getCellInfoListResponse_1_4";
+    case RADIO_RESP_GET_DATA_REGISTRATION_STATE_RESPONSE_1_4:
+        return "getDataRegistrationStateResponse_1_4";
+    case RADIO_RESP_GET_ICC_CARD_STATUS_RESPONSE_1_4:
+        return "getIccCardStatusResponse_1_4";
+    case RADIO_RESP_GET_DATA_CALL_LIST_RESPONSE_1_4:
+        return "getDataCallListResponse_1_4";
+    case RADIO_RESP_SETUP_DATA_CALL_RESPONSE_1_4:
+        return "setupDataCallResponse_1_4";
     case RADIO_RESP_ANY:
         break;
     }
@@ -80,6 +117,9 @@ radio_ind_name(
 #define RADIO_IND_(code,Name,NAME) \
     case RADIO_IND_##NAME: return #Name;
     RADIO_EVENT_1_0(RADIO_IND_)
+    RADIO_EVENT_1_1(RADIO_IND_)
+    RADIO_EVENT_1_2(RADIO_IND_)
+    RADIO_EVENT_1_4(RADIO_IND_)
 #undef RADIO_IND_
     case RADIO_IND_ANY:
         break;
@@ -87,6 +127,17 @@ radio_ind_name(
     return NULL;
 }
 
+/**
+ * This function no longer makes as much sense as it did in IRadio 1.0 times.
+ * Later it turned out that that same call may produce different responses
+ * under different circumstances. For example, getIccCardStatus call may
+ * cause getIccCardStatusResponse or getIccCardStatusResponse_1_2 to be
+ * sent back, depending on which interfaces are supported by the caller.
+ * There's no longer one-to-one match between requests and responses,
+ * that would be too easy and straightforward for Google designers :)
+ *
+ * Use this function carefully or better don't use it at all.
+ */
 RADIO_RESP
 radio_req_resp(
     RADIO_REQ req)
@@ -95,10 +146,24 @@ radio_req_resp(
 #define RADIO_REQ_(req,resp,Name,NAME) \
     case RADIO_REQ_##NAME: return RADIO_RESP_##NAME;
     RADIO_CALL_1_0(RADIO_REQ_)
+    RADIO_CALL_1_1(RADIO_REQ_)
+    RADIO_CALL_1_2(RADIO_REQ_)
+    RADIO_CALL_1_3(RADIO_REQ_)
+    RADIO_CALL_1_4(RADIO_REQ_)
 #undef RADIO_REQ_
-    default:
-        return RADIO_RESP_NONE;
+    case RADIO_REQ_SET_RESPONSE_FUNCTIONS:
+    case RADIO_REQ_RESPONSE_ACKNOWLEDGEMENT:
+    case RADIO_REQ_START_NETWORK_SCAN_1_2:
+    case RADIO_REQ_SET_INDICATION_FILTER_1_2:
+    case RADIO_REQ_SETUP_DATA_CALL_1_2:
+    case RADIO_REQ_DEACTIVATE_DATA_CALL_1_2:
+    case RADIO_REQ_SETUP_DATA_CALL_1_4:
+    case RADIO_REQ_SET_INITIAL_ATTACH_APN_1_4:
+    case RADIO_REQ_SET_DATA_PROFILE_1_4:
+    case RADIO_REQ_ANY:
+        break;
     }
+    return RADIO_RESP_NONE;
 }
 
 /*
